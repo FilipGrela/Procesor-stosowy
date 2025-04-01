@@ -7,6 +7,19 @@
 
 list::list() : size(0), head(nullptr) {}
 
+list::list(const list &other) : size(other.size), head(nullptr) {
+    copyList(head, other.head);
+}
+
+void list::copyList(list_node *&thisNode, list_node *otherNode) {
+    if (otherNode == nullptr) {
+        thisNode = nullptr;
+    } else {
+        thisNode = new list_node{otherNode->data, nullptr};
+        copyList(thisNode->next, otherNode->next);
+    }
+}
+
 void list::deleteList(list_node *node) {
     if (node == nullptr) {
         return;
@@ -43,7 +56,7 @@ void list::removeNode(list_node *&node, int index) {
 
 void list::remove(const int index) {
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Index out of range");
+        throw std::out_of_range("Index out of range remove");
     }
     removeNode(head, index);
 }
@@ -54,7 +67,7 @@ int list::getSize() const {
 
 char list::getElementRecursive(list_node *node, int index) const {
     if (node == nullptr) {
-        throw std::out_of_range("Index out of range");
+        throw std::out_of_range("Index out of range getElementRecursive");
     }
     if (index == 0) {
         return node->data;
@@ -62,9 +75,12 @@ char list::getElementRecursive(list_node *node, int index) const {
     return getElementRecursive(node->next, index - 1);
 }
 
-char list::getElement(int index) {
+char list::getListElement(int index) {
+    if (head == nullptr) {
+        return '\0';
+    }
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Index out of range");
+        throw std::out_of_range("Index out of range getListElement");
     }
     return getElementRecursive(head, index);
 }
@@ -75,6 +91,18 @@ void list::printList(std::ostream& os, list_node *node) const {
     }
     os << node->data;
     printList(os, node->next);
+}
+
+char list::popListElement() {
+    if (head == nullptr) {
+        throw std::out_of_range("List is empty");
+    }
+    char value = head->data;
+    list_node *temp = head;
+    head = head->next;
+    delete temp;
+    --size;
+    return value;
 }
 
 std::ostream& operator<<(std::ostream& os, const list &lst) {

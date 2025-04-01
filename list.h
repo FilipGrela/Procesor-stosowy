@@ -12,18 +12,20 @@ struct list_node {
 };
 
 class list {
-    list(const list &);
-    list_node *head;
     list &operator=(const list &);
     friend std::ostream& operator<<(std::ostream& os, const list &list);
 public:
+    list_node *head;
     list();
+    list(const list &other);
     ~list();
     void add(char);
     void remove(int index);
     int getSize() const;
-    char getElement(int index);
+    char getListElement(int index);
+    char popListElement();
 private:
+    void copyList(list_node *&thisNode, list_node *otherNode);
     void removeNode(list_node *&node, int index);
     char getElementRecursive(list_node *node, int index) const;
     void deleteList(list_node *node);

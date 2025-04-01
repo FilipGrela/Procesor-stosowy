@@ -26,8 +26,8 @@ public:
     int getSize() const;
     list* pop();
     bool empty() const;
-
-    list* &getTopElement();
+    void flipTopList();
+    list* &getListByPosition(int index = 0, stack_node *node = nullptr);
 private:
     void deleteStack(stack_node *node);
     void copyStack(stack_node *&dest, stack_node *src);

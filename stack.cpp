@@ -66,11 +66,26 @@ int stack::push(list *value) {
     return ++size;
 }
 
-list* &stack::getTopElement() {
+void stack::flipTopList() {
     if (head == nullptr) {
         throw std::out_of_range("Stack is empty");
     }
-    return head->data;
+    list *temp = head->data;
+    head->data = head->next->data;
+    head->next->data = temp;
+}
+
+list* &stack::getListByPosition(int index, stack_node *node) {
+    if (index < 0 || index >= size) {
+        throw std::out_of_range("Index out of range getListByPosition");
+    }
+    if (node == nullptr) {
+        node = head;
+    }
+    if (index == 0) {
+        return node->data;
+    }
+    return getListByPosition(index - 1, node->next);
 }
 
 list* stack::pop() {
