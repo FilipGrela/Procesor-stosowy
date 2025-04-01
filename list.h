@@ -20,10 +20,13 @@ public:
     list();
     ~list();
     void add(char);
-    void remove(const char *);
+    void remove(int index);
     int getSize() const;
     char getElement(int index);
 private:
+    void removeNode(list_node *&node, int index);
+    char getElementRecursive(list_node *node, int index) const;
+    void deleteList(list_node *node);
     void printList(std::ostream& os, list_node *node) const;
     int size;
 };

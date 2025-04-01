@@ -7,12 +7,16 @@
 
 list::list() : size(0), head(nullptr) {}
 
-list::~list() {
-    while (head != nullptr) {
-        list_node *temp = head;
-        head = head->next;
-        delete temp;
+void list::deleteList(list_node *node) {
+    if (node == nullptr) {
+        return;
     }
+    deleteList(node->next);
+    delete node;
+}
+
+list::~list() {
+    deleteList(head);
 }
 
 void list::add(const char value) {
@@ -23,39 +27,46 @@ void list::add(const char value) {
     ++size;
 }
 
-void list::remove(const char *value) {
-    list_node *current = head;
-    list_node *previous = nullptr;
-
-    while (current != nullptr && current->data != 0) {
-        previous = current;
-        current = current->next;
+void list::removeNode(list_node *&node, int index) {
+    if (node == nullptr) {
+        return;
     }
-
-    if (current != nullptr) {
-        if (previous == nullptr) {
-            head = current->next;
-        } else {
-            previous->next = current->next;
-        }
-        delete current;
+    if (index == 0) {
+        list_node *temp = node;
+        node = node->next;
+        delete temp;
         --size;
+    } else {
+        removeNode(node->next, index - 1);
     }
+}
+
+void list::remove(const int index) {
+    if (index < 0 || index >= size) {
+        throw std::out_of_range("Index out of range");
+    }
+    removeNode(head, index);
 }
 
 int list::getSize() const {
     return size;
 }
 
+char list::getElementRecursive(list_node *node, int index) const {
+    if (node == nullptr) {
+        throw std::out_of_range("Index out of range");
+    }
+    if (index == 0) {
+        return node->data;
+    }
+    return getElementRecursive(node->next, index - 1);
+}
+
 char list::getElement(int index) {
     if (index < 0 || index >= size) {
         throw std::out_of_range("Index out of range");
     }
-    list_node *current = head;
-    for (int i = 0; i < index; ++i) {
-        current = current->next;
-    }
-    return current->data;
+    return getElementRecursive(head, index);
 }
 
 void list::printList(std::ostream& os, list_node *node) const {

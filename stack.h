@@ -27,8 +27,10 @@ public:
     list* pop();
     bool empty() const;
 
-    list *getTopElement();
+    list* &getTopElement();
 private:
+    void deleteStack(stack_node *node);
+    void copyStack(stack_node *&dest, stack_node *src);
     void printStack(std::ostream& os, stack_node *node, int index) const;
     int size;
 };

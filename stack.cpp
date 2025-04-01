@@ -9,51 +9,37 @@
 
 stack::stack() : size(0), head(nullptr){}
 
-stack::~stack() {
-    while (!empty()) {
-        pop();
+void stack::deleteStack(stack_node *node) {
+    if (node == nullptr) {
+        return;
     }
+    deleteStack(node->next);
+    delete node->data;
+    delete node;
+}
+
+stack::~stack() {
+    deleteStack(head);
+}
+
+void stack::copyStack(stack_node *&dest, stack_node *src) {
+    if (src == nullptr) {
+        dest = nullptr;
+        return;
+    }
+    dest = new stack_node{src->data, nullptr};
+    copyStack(dest->next, src->next);
 }
 
 stack::stack(const stack &other) : size(other.size), head(nullptr) {
-    if (other.head) {
-
-        head = new stack_node{
-            other.head->data,
-            nullptr
-        };
-
-        stack_node *current = head;
-
-        stack_node *otherCurrent = other.head->next;
-        while (otherCurrent) {
-            current->next = new stack_node{otherCurrent->data, nullptr};
-            current = current->next;
-            otherCurrent = otherCurrent->next;
-        }
-    }
+    copyStack(head, other.head);
 }
 
 stack &stack::operator=(const stack &other) {
     if (this != &other) {
-        while (!empty()) {
-            pop();
-        }
+        deleteStack(head);
         size = other.size;
-        if (other.head) {
-            head = new stack_node{
-                other.head->data,
-                nullptr
-            };
-            stack_node *current = head;
-            stack_node *otherCurrent = other.head->next;
-
-            while (otherCurrent) {
-                current->next = new stack_node{otherCurrent->data, nullptr};
-                current = current->next;
-                otherCurrent = otherCurrent->next;
-            }
-        }
+        copyStack(head, other.head);
     }
     return *this;
 }
@@ -80,8 +66,10 @@ int stack::push(list *value) {
     return ++size;
 }
 
-list *stack::getTopElement() {
-    assert(!empty() && "Stack is empty. You tried to get top element of empty stack!");
+list* &stack::getTopElement() {
+    if (head == nullptr) {
+        throw std::out_of_range("Stack is empty");
+    }
     return head->data;
 }
 

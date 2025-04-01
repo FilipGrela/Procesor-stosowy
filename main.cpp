@@ -40,6 +40,19 @@ int main() {
     std::cout << *processorStack << std::endl;
 
 
+    processorStack->getTopElement()->remove(0);
+    std::cout << *processorStack << std::endl;
+
+    list *topList = new list();
+    topList->add('7');
+    topList->add('8');
+
+    processorStack->getTopElement() = topList;
+    std::cout << *processorStack << std::endl;
+
+
+
+
     std::cout <<  processorStack->getTopElement()->getElement(0);
 
     return 0;
