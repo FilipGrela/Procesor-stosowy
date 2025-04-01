@@ -1,0 +1,6 @@
+# ninja log v6
+25	568	7652380957205138	CMakeFiles/Procesor_stosowy.dir/main.cpp.obj	e8ee7e787e230e0c
+568	666	7652380962642784	Procesor_stosowy.exe	745084808d59e848
+29	546	7652367346223473	CMakeFiles/Procesor_stosowy.dir/structures/stack.cpp.obj	a56a8652c153ecba
+20	581	7652391024792342	build.ninja	11201e94cf574b29
+28	561	7652380957235142	CMakeFiles/Procesor_stosowy.dir/stack.cpp.obj	a5c946bc1387f630

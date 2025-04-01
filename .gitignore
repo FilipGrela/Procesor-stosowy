@@ -1,0 +1,28 @@
+# Kompilowane pliki binarne
+*.out
+*.exe
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+
+# Pliki generowane przez IDE
+.idea/
+.vscode/
+*.iml
+
+# Pliki tymczasowe
+*.log
+*.tmp
+*.temp
+
+# Pliki konfiguracyjne systemu
+.DS_Store
+Thumbs.db
+
+# Pliki generowane przez CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
