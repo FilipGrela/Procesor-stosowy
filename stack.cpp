@@ -5,6 +5,7 @@
 #include "stack.h"
 
 #include <assert.h>
+#include <string.h>
 
 stack::stack() : size(0), head(nullptr){}
 
@@ -17,16 +18,16 @@ stack::~stack() {
 stack::stack(const stack &other) : size(other.size), head(nullptr) {
     if (other.head) {
 
-        head = new node{
+        head = new stack_node{
             other.head->data,
             nullptr
         };
 
-        node *current = head;
+        stack_node *current = head;
 
-        node *otherCurrent = other.head->next;
+        stack_node *otherCurrent = other.head->next;
         while (otherCurrent) {
-            current->next = new node{otherCurrent->data, nullptr};
+            current->next = new stack_node{otherCurrent->data, nullptr};
             current = current->next;
             otherCurrent = otherCurrent->next;
         }
@@ -40,15 +41,15 @@ stack &stack::operator=(const stack &other) {
         }
         size = other.size;
         if (other.head) {
-            head = new node{
+            head = new stack_node{
                 other.head->data,
                 nullptr
             };
-            node *current = head;
-            node *otherCurrent = other.head->next;
+            stack_node *current = head;
+            stack_node *otherCurrent = other.head->next;
 
             while (otherCurrent) {
-                current->next = new node{otherCurrent->data, nullptr};
+                current->next = new stack_node{otherCurrent->data, nullptr};
                 current = current->next;
                 otherCurrent = otherCurrent->next;
             }
@@ -57,34 +58,37 @@ stack &stack::operator=(const stack &other) {
     return *this;
 }
 
-std::ostream& operator<<(std::ostream& os, const stack &other) {
-    node *current = other.head;
-    int index = 1;
-    os << "{ \n";
-    while (current) {
-        os << index << ": \"" << current->data << "\"";
-        current = current->next;
-        if (current) {
-            os << ",";
-        }
-        os << "\n";
-        ++index;
+void stack::printStack(std::ostream& os, stack_node *node, int index) const {
+    if (node == nullptr) {
+        return;
     }
-    os << "}" << std::endl;
+    printStack(os, node->next, index + 1);
+    os << index << ": " << *(node->data) << "\n";
+}
+
+std::ostream& operator<<(std::ostream& os, const stack &other) {
+    other.printStack(os, other.head, 0);
     return os;
 }
 
-int stack::push(const char &value) {
-    node *newNode = new node{value, head};
+int stack::push(list *value) {
+    stack_node *newNode = new stack_node{
+        value,
+        head
+    };
     head = newNode;
-    ++size;
-    return size;
+    return ++size;
 }
 
-char stack::pop() {
+list *stack::getTopElement() {
+    assert(!empty() && "Stack is empty. You tried to get top element of empty stack!");
+    return head->data;
+}
+
+list* stack::pop() {
     assert(!empty() && "Stack is empty. You tried to pop empty stack!");
-    node *temp = head;
-    char value = head->data;
+    stack_node *temp = head;
+    list *value = head->data;
     head = head->next;
     delete temp;
     --size;

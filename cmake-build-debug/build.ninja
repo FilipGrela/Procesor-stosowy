@@ -61,6 +61,12 @@ build CMakeFiles/Procesor_stosowy.dir/stack.cpp.obj: CXX_COMPILER__Procesor_stos
   OBJECT_DIR = CMakeFiles\Procesor_stosowy.dir
   OBJECT_FILE_DIR = CMakeFiles\Procesor_stosowy.dir
 
+build CMakeFiles/Procesor_stosowy.dir/list.cpp.obj: CXX_COMPILER__Procesor_stosowy_unscanned_Debug C$:/Users/Filip/Documents/Studia/Semestr$ 2/Algorytmy$ i$ struktury$ danych/Projekty/Procesor$ stosowy/list.cpp || cmake_object_order_depends_target_Procesor_stosowy
+  DEP_FILE = CMakeFiles\Procesor_stosowy.dir\list.cpp.obj.d
+  FLAGS = -g -std=gnu++20 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\Procesor_stosowy.dir
+  OBJECT_FILE_DIR = CMakeFiles\Procesor_stosowy.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target Procesor_stosowy
@@ -69,7 +75,7 @@ build CMakeFiles/Procesor_stosowy.dir/stack.cpp.obj: CXX_COMPILER__Procesor_stos
 #############################################
 # Link the executable Procesor_stosowy.exe
 
-build Procesor_stosowy.exe: CXX_EXECUTABLE_LINKER__Procesor_stosowy_Debug CMakeFiles/Procesor_stosowy.dir/main.cpp.obj CMakeFiles/Procesor_stosowy.dir/stack.cpp.obj
+build Procesor_stosowy.exe: CXX_EXECUTABLE_LINKER__Procesor_stosowy_Debug CMakeFiles/Procesor_stosowy.dir/main.cpp.obj CMakeFiles/Procesor_stosowy.dir/stack.cpp.obj CMakeFiles/Procesor_stosowy.dir/list.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\Procesor_stosowy.dir

@@ -7,24 +7,29 @@
 
 #include <iostream>
 
-struct node {
-    char data;
-    node *next;
+#include "list.h"
+
+struct stack_node {
+    list *data;
+    stack_node *next;
 };
 
 class stack {
     stack(const stack &);
-    node *head;
+    stack_node *head;
     stack &operator=(const stack &);
     friend std::ostream& operator<<(std::ostream& os, const stack &stack);
 public:
     stack();
     ~stack();
-    int push(const char &);
+    int push(list*);
     int getSize() const;
-    char pop();
+    list* pop();
     bool empty() const;
+
+    list *getTopElement();
 private:
+    void printStack(std::ostream& os, stack_node *node, int index) const;
     int size;
 };
 
