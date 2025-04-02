@@ -1,9 +1,4 @@
-#include <string.h>
-
 #include "stack.h"
-
-// '&1&2&3&'&4&5&6&'&7&8&9&:&:&;&;&,&,&;&;&'0&@&,&'1&@&,&'2&@&,&,,,'9999999&
-// '0&@&,&'1&@&,&'2&@&,&,,,'9999999&
 
 char program[20000];
 ///< Pamięć programu przechowuje program. Program jest sekwencją instrukcji, a każda instrukcja jest jednym znakiem.
@@ -17,6 +12,13 @@ int current_step_pointer;
 stack *processorStack;
 ///< Stos procesora.
 
+int getStringLength(const char *str, int acc = 0) {
+    if (*str == '\0') {
+        return acc;
+    }
+    return getStringLength(str + 1, acc + 1);
+}
+
 void getProgram() {
     std::cin >> program;
 }
@@ -29,7 +31,6 @@ void init() {
     current_step_pointer = 0;
     processorStack = new stack();
     getProgram();
-    // getInputData();
 }
 
 int listToIntRecursive(list_node *node, int multiplier) {
@@ -44,12 +45,12 @@ int listToInt(list *lst) {
     if (lst->getSize() == 0) {
         return 0;
     }
-    bool isNegative = (lst->getListElement(lst->getSize()-1) == '-');
+    bool isNegative = (lst->getListElement(lst->getSize() - 1) == '-');
     int result = listToIntRecursive(lst->head, 1);
     return isNegative ? -result : result;
 }
 
-void intToStr(int num, char* str) {
+void intToStr(int num, char *str) {
     int i = 0;
     bool isNegative = false;
 
@@ -76,9 +77,9 @@ void intToStr(int num, char* str) {
     }
 }
 
-void handleNumberInsertion(const char* number) {
+void handleNumberInsertion(const char *number) {
     list *newList = new list();
-    for (int i = strlen(number) - 1; i >= 0; --i) {
+    for (int i = getStringLength(number) - 1; i >= 0; --i) {
         newList->add(number[i]);
     }
     processorStack->push(newList);
@@ -107,12 +108,18 @@ void handleAtSymbol() {
     processorStack->push(list_on_position);
 }
 
+void printChar(const char c) {
+    std::cout << c;
+}
 
 int main() {
     init();
 
     list *top = nullptr;
     list *newList = nullptr; // Deklaracja zmiennej przed instrukcją switch
+
+    bool isInputDataRead = false;
+    int inputDataIndex = 0;
 
     do {
         switch (program[current_step_pointer]) {
@@ -138,20 +145,38 @@ int main() {
                 break;
             case '-':
                 top = processorStack->getListByPosition();
-                if (top->getSize() > 0 and top->getListElement(0) == '-') {
-                    top->popListElement();
+                if (top != nullptr and top->getSize() > 0 and top->getListElement(top->getSize()-1) == '-') {
+                    top->remove(top->getSize() - 1);
                 } else {
-                    top->add('-');
+                    top->add('-', top->getSize());
                 }
                 break;
             case '+':
                 handlePlusSymbol();
                 break;
+            case '.':
+                if (!isInputDataRead) {
+                    getInputData();
+                    isInputDataRead = true;
+                }
+                processorStack->getListByPosition()->add(inputData[inputDataIndex]);
+                inputDataIndex++;
+                break;
+            case '^':
+                top = processorStack->getListByPosition();
+                if (top->getSize() > 0 and top->getListElement(top->getSize() - 1) == '-') {
+                    top->remove(top->getSize() - 1);
+                }
+                break;
+            case '>':
+                printChar(processorStack->getListByPosition()->popListElement());
+                processorStack->pop();
+                break;
             default:
                 processorStack->getListByPosition()->add(program[current_step_pointer]);
         }
         current_step_pointer++;
-    } while (current_step_pointer <= strlen(program));
+    } while (program[current_step_pointer] != '\0');
 
     return 0;
 }

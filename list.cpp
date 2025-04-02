@@ -3,11 +3,11 @@
 //
 
 #include "list.h"
-#include <cstring>
 
-list::list() : size(0), head(nullptr) {}
+list::list() : head(nullptr), size(0) {
+}
 
-list::list(const list &other) : size(other.size), head(nullptr) {
+list::list(const list &other) : head(nullptr), size(other.size) {
     copyList(head, other.head);
 }
 
@@ -32,12 +32,30 @@ list::~list() {
     deleteList(head);
 }
 
-void list::add(const char value) {
+void list::addOnBegining(const char value) {
     list_node *newNode = new list_node;
     newNode->data = value;
     newNode->next = head;
     head = newNode;
     ++size;
+}
+
+void list::add(const char value, int index) {
+    if (index < 0 || index > size) {
+        throw std::out_of_range("Index out of range add");
+    }
+    if (index == 0) {
+        addOnBegining(value);
+    } else {
+        list_node *newNode = new list_node{value, nullptr};
+        list_node *current = head;
+        for (int i = 1; i < index; ++i) {
+            current = current->next;
+        }
+        newNode->next = current->next;
+        current->next = newNode;
+        ++size;
+    }
 }
 
 void list::removeNode(list_node *&node, int index) {
@@ -85,7 +103,7 @@ char list::getListElement(int index) {
     return getElementRecursive(head, index);
 }
 
-void list::printList(std::ostream& os, list_node *node) const {
+void list::printList(std::ostream &os, list_node *node) const {
     if (node == nullptr) {
         return;
     }
@@ -105,7 +123,7 @@ char list::popListElement() {
     return value;
 }
 
-std::ostream& operator<<(std::ostream& os, const list &lst) {
+std::ostream &operator<<(std::ostream &os, const list &lst) {
     lst.printList(os, lst.head);
     return os;
 }

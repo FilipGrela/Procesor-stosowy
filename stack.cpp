@@ -5,7 +5,6 @@
 #include "stack.h"
 
 #include <assert.h>
-#include <string.h>
 
 stack::stack() : size(0), head(nullptr){}
 
@@ -77,7 +76,7 @@ void stack::flipTopList() {
 
 list* &stack::getListByPosition(int index, stack_node *node) {
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Index out of range getListByPosition");
+        throw std::out_of_range("Index out of range in getListByPosition.");
     }
     if (node == nullptr) {
         node = head;
