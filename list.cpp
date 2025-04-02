@@ -72,6 +72,28 @@ void list::removeNode(list_node *&node, int index) {
     }
 }
 
+void list::mergeLists(list *otherList) {
+    if (otherList == nullptr || otherList->head == nullptr) {
+        return;
+    }
+    if (head == nullptr) {
+        head = otherList->head;
+    } else {
+        mergeListsRecursive(head, otherList->head);
+    }
+    size += otherList->size;
+    otherList->head = nullptr;
+}
+
+void list::mergeListsRecursive(list_node *current, list_node *otherHead) {
+    if (current->next == nullptr) {
+        current->next = otherHead;
+    } else {
+        mergeListsRecursive(current->next, otherHead);
+    }
+}
+
+
 void list::remove(const int index) {
     if (index < 0 || index >= size) {
         throw std::out_of_range("Index out of range remove");

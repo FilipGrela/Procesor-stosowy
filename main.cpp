@@ -112,6 +112,53 @@ void printChar(const char c) {
     std::cout << c;
 }
 
+void handleRightBracket() {
+    list *listA = processorStack->pop();
+    int A = listToInt(listA);
+    char asciiChar = static_cast<char>(A);
+    list *newList = new list();
+    newList->add(asciiChar);
+    processorStack->push(newList);
+}
+
+void handleLeftBracketRecursive(list *newList, const char *asciiStr, int index) {
+    if (index < 0) {
+        processorStack->push(newList);
+        return;
+    }
+    newList->add(asciiStr[index], newList->getSize());
+    handleLeftBracketRecursive(newList, asciiStr, index - 1);
+}
+
+void handleLeftBracket() {
+    list *listA = processorStack->pop();
+    if (listA->getSize() == 0) {
+        throw std::out_of_range("List is empty");
+    }
+
+    char firstChar = listA->getListElement(0);
+    int firstCharValue = static_cast<int>(firstChar);
+    char asciiStr[20];
+    intToStr(firstCharValue, asciiStr);
+
+    list *newList = new list();
+    handleLeftBracketRecursive(newList, asciiStr, getStringLength(asciiStr) - 1);
+}
+
+void handleDolarSymbol() {
+    char firstChar = processorStack->getListByPosition()->popListElement();
+    list *newList = new list();
+    newList->add(firstChar);
+    processorStack->push(newList);
+}
+
+void handleHashSymbol() {
+    list *listA = processorStack->pop();
+    list *listB = processorStack->getListByPosition();
+
+    listB->mergeLists(listA);
+}
+
 int main() {
     init();
 
@@ -145,7 +192,7 @@ int main() {
                 break;
             case '-':
                 top = processorStack->getListByPosition();
-                if (top != nullptr and top->getSize() > 0 and top->getListElement(top->getSize()-1) == '-') {
+                if (top != nullptr and top->getSize() > 0 and top->getListElement(top->getSize() - 1) == '-') {
                     top->remove(top->getSize() - 1);
                 } else {
                     top->add('-', top->getSize());
@@ -172,6 +219,18 @@ int main() {
                 printChar(processorStack->getListByPosition()->popListElement());
                 processorStack->pop();
                 break;
+            case ']':
+                handleRightBracket();
+                break;
+            case '[':
+                handleLeftBracket();
+            break;
+            case '$':
+                handleDolarSymbol();
+            break;
+            case '#':
+                handleHashSymbol();
+            break;
             default:
                 processorStack->getListByPosition()->add(program[current_step_pointer]);
         }
