@@ -19,10 +19,12 @@ int getStringLength(const char *str, int acc = 0) {
     return getStringLength(str + 1, acc + 1);
 }
 
+///Read program from user
 void getProgram() {
     std::cin >> program;
 }
 
+///Read data from user
 void getInputData() {
     std::cin >> inputData;
 }
@@ -33,7 +35,7 @@ void init() {
     getProgram();
 }
 
-int listToIntRecursive(list_node *node, int multiplier) {
+int listToIntRecursive(const list_node *node, const int multiplier) {
     if (node == nullptr or node->data == '-') {
         return 0;
     }
@@ -50,31 +52,42 @@ int listToInt(list *lst) {
     return isNegative ? -result : result;
 }
 
+void reverseStrRecursive(char *str, int start, int end) {
+    if (start >= end) {
+        return;
+    }
+    char temp = str[start];
+    str[start] = str[end];
+    str[end] = temp;
+    reverseStrRecursive(str, start + 1, end - 1);
+}
+
+void intToStrRecursive(int num, char *str, int &i) {
+    if (num == 0) {
+        return;
+    }
+    str[i++] = (num % 10) + '0';
+    intToStrRecursive(num / 10, str, i);
+}
+
 void intToStr(int num, char *str) {
     int i = 0;
-    bool isNegative = false;
 
-    if (num < 0) {
-        isNegative = true;
-        num = -num;
+    // Take absolute value
+    bool isNegative = num < 0;
+    if (isNegative) num = -num;
+
+    if (num == 0) {
+        str[i++] = '0';
+    } else {
+        intToStrRecursive(num, str, i);
     }
-
-    do {
-        str[i++] = (num % 10) + '0';
-        num /= 10;
-    } while (num != 0);
 
     if (isNegative) {
         str[i++] = '-';
     }
 
     str[i] = '\0';
-
-    for (int j = 0; j < i / 2; ++j) {
-        char temp = str[j];
-        str[j] = str[i - j - 1];
-        str[i - j - 1] = temp;
-    }
 }
 
 void handleNumberInsertion(const char *number) {
@@ -85,6 +98,9 @@ void handleNumberInsertion(const char *number) {
     processorStack->push(newList);
 }
 
+/**
+ * Add 2 numbers on top of the stack. Remove them, add new number on top.
+ */
 void handlePlusSymbol() {
     list *listA = processorStack->pop();
     list *listB = processorStack->pop();
@@ -99,6 +115,10 @@ void handlePlusSymbol() {
     handleNumberInsertion(result);
 }
 
+/**
+ * Remove top number from top of stack (A).
+ * Put copy of number on position A on top of the stack.
+ */
 void handleAtSymbol() {
     list *listA = processorStack->pop();
 
@@ -112,6 +132,10 @@ void printChar(const char c) {
     std::cout << c;
 }
 
+/**
+ * Remove number on top of the stack (A).
+ * Put on top of the stack char of number A.
+ */
 void handleRightBracket() {
     list *listA = processorStack->pop();
     int A = listToInt(listA);
@@ -121,19 +145,26 @@ void handleRightBracket() {
     processorStack->push(newList);
 }
 
+
+// TODO commets
 void handleLeftBracketRecursive(list *newList, const char *asciiStr, int index) {
-    if (index < 0) {
+    if (index >= getStringLength(asciiStr)) {
         processorStack->push(newList);
         return;
     }
     newList->add(asciiStr[index], newList->getSize());
-    handleLeftBracketRecursive(newList, asciiStr, index - 1);
+    handleLeftBracketRecursive(newList, asciiStr, index + 1);
 }
 
+
+/**
+ * Remove number on top of the stack (A).
+ * Put on top of the stack number of the value of the first from char A.
+ */
 void handleLeftBracket() {
     list *listA = processorStack->pop();
     if (listA->getSize() == 0) {
-        throw std::out_of_range("List is empty");
+        throw std::out_of_range("List is empty handleLeftBracket main.cpp");
     }
 
     char firstChar = listA->getListElement(0);
@@ -142,9 +173,14 @@ void handleLeftBracket() {
     intToStr(firstCharValue, asciiStr);
 
     list *newList = new list();
-    handleLeftBracketRecursive(newList, asciiStr, getStringLength(asciiStr) - 1);
+    handleLeftBracketRecursive(newList, asciiStr, 0);
 }
 
+
+/**
+ * Get fist char from number on top of the stack.
+ * Put it on top of the stack.
+ */
 void handleDolarSymbol() {
     char firstChar = processorStack->getListByPosition()->popListElement();
     list *newList = new list();
@@ -152,6 +188,11 @@ void handleDolarSymbol() {
     processorStack->push(newList);
 }
 
+
+/**
+ * Remove number A from top on the stack.
+ * Put A on the on of number B (second number on stack)
+ */
 void handleHashSymbol() {
     list *listA = processorStack->pop();
     list *listB = processorStack->getListByPosition();
@@ -159,61 +200,177 @@ void handleHashSymbol() {
     listB->mergeLists(listA);
 }
 
+/**
+ * Add empty list to processor stack
+ */
+void handleApostrofSumbol() {
+    processorStack->push(new list());
+};
+
+
+/**
+ * Remove first element on processor stack.
+ */
+void handleCommaSymbol() {
+    processorStack->pop();
+};
+
+
+/**
+ * Put on stack copy of the list form top of stack.
+ */
+void handleColonSymbol() {
+    list *top = processorStack->getListByPosition();
+    list *newList = new list(*top);
+    processorStack->push(newList);
+}
+
+/**
+ * Swap first and second element on top of processor stack.
+ */
+void handleSemicolon() {
+    processorStack->flipTopList();
+}
+
+/**
+ * Print the stack.
+ */
+void handleAmpersandSymbol() {
+    std::cout << *processorStack;
+}
+
+
+/**
+ * Add '-' to the end of the list on top of the stack.
+ * If '-' already present remove it.
+ */
+void handleMinusSymbol() {
+    list *top = processorStack->getListByPosition();
+    if (top != nullptr && top->getSize() > 0 && top->getListElement(top->getSize() - 1) == '-') {
+        top->remove(top->getSize() - 1);
+    } else {
+        top->add('-', top->getSize());
+    }
+}
+
+/**
+* Read sign from inputData, add it to the list on top of the stack.
+*
+* @param isInputDataRead if set to false program will load data from std in.
+* @param inputDataIndex pointer to current char in inputData tabele.
+*/
+void handleDotSymbol(bool &isInputDataRead, int &inputDataIndex) {
+    if (!isInputDataRead) {
+        getInputData();
+        isInputDataRead = true;
+    }
+    processorStack->getListByPosition()->add(inputData[inputDataIndex]);
+    inputDataIndex++;
+}
+
+
+/**
+ *  Take absolute value of number on top of processor stack.
+ */
+void handleCaretSymbol() {
+    list *top = processorStack->getListByPosition();
+    if (top->getSize() > 0 && top->getListElement(top->getSize() - 1) == '-') {
+        top->remove(top->getSize() - 1);
+    }
+}
+
+/**
+ * Compare 2 top numbers A B. Remove them from stack.
+ * If A < B put 1 on top otherwise put 0.
+ */
+void handleLessSymbol() {
+    int A = listToInt(processorStack->pop());
+    int B = listToInt(processorStack->pop());
+
+    list *lst = new list();
+    lst->add((A < B) + '0');
+
+    processorStack->push(lst);
+};
+
+/**
+ * Compare 2 top numbers A B. Remove them from stack.
+ * If A = B put 1 on top otherwise put 0.
+ */
+void handleEqualSymbol() {
+    int A = listToInt(processorStack->pop());
+    int B = listToInt(processorStack->pop());
+
+    list *lst = new list();
+    lst->add((A == B) + '0');
+
+    processorStack->push(lst);
+};
+
+void handleWykrzyknikSymbol() {
+    list *lst = processorStack->pop();
+    list *newList = new list();
+
+    if (lst->empty() or (lst->getSize() == 1 and lst->getListElement(0) == '0')) {
+        newList->add('1');
+        processorStack->push(newList);
+        return;
+    }
+
+    newList->add('0');
+    processorStack->push(newList);
+};
+
+void handleTyldaSymbol(int number) {
+    char str[10];
+    intToStr(number, str);
+    handleNumberInsertion(str);
+};
+
+bool handleQuestionMarkSymbol() {
+    return true;
+};
+
 int main() {
     init();
 
     list *top = nullptr;
-    list *newList = nullptr; // Deklaracja zmiennej przed instrukcją switch
 
     bool isInputDataRead = false;
+    bool increseInstructionPointer = true;
     int inputDataIndex = 0;
 
     do {
         switch (program[current_step_pointer]) {
             case '\'':
-                processorStack->push(new list());
+                handleApostrofSumbol();
                 break;
             case ',':
-                processorStack->pop();
+                handleCommaSymbol();
                 break;
             case ':':
-                top = processorStack->getListByPosition();
-                newList = new list(*top);
-                processorStack->push(newList);
+                handleColonSymbol();
                 break;
             case ';':
-                processorStack->flipTopList();
+                handleSemicolon();
                 break;
             case '@':
                 handleAtSymbol();
                 break;
             case '&':
-                std::cout << *processorStack;
+                handleAmpersandSymbol();
                 break;
             case '-':
-                top = processorStack->getListByPosition();
-                if (top != nullptr and top->getSize() > 0 and top->getListElement(top->getSize() - 1) == '-') {
-                    top->remove(top->getSize() - 1);
-                } else {
-                    top->add('-', top->getSize());
-                }
+                handleMinusSymbol();
                 break;
             case '+':
                 handlePlusSymbol();
                 break;
             case '.':
-                if (!isInputDataRead) {
-                    getInputData();
-                    isInputDataRead = true;
-                }
-                processorStack->getListByPosition()->add(inputData[inputDataIndex]);
-                inputDataIndex++;
+                handleDotSymbol(isInputDataRead, inputDataIndex);
                 break;
             case '^':
-                top = processorStack->getListByPosition();
-                if (top->getSize() > 0 and top->getListElement(top->getSize() - 1) == '-') {
-                    top->remove(top->getSize() - 1);
-                }
+                handleCaretSymbol();
                 break;
             case '>':
                 printChar(processorStack->getListByPosition()->popListElement());
@@ -224,17 +381,33 @@ int main() {
                 break;
             case '[':
                 handleLeftBracket();
-            break;
+                break;
             case '$':
                 handleDolarSymbol();
-            break;
+                break;
             case '#':
                 handleHashSymbol();
-            break;
+                break;
+            case '<':
+                handleLessSymbol();
+                break;
+            case '=':
+                handleEqualSymbol();
+                break;
+            case '!':
+                handleWykrzyknikSymbol();
+                break;
+            case '~':
+                handleTyldaSymbol(current_step_pointer);
+                break;
+            case '?':
+                increseInstructionPointer = handleQuestionMarkSymbol();
+                break;
             default:
                 processorStack->getListByPosition()->add(program[current_step_pointer]);
         }
-        current_step_pointer++;
+        if (increseInstructionPointer) current_step_pointer++;
+
     } while (program[current_step_pointer] != '\0');
 
     return 0;

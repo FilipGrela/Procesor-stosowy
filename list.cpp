@@ -133,6 +133,11 @@ void list::printList(std::ostream &os, list_node *node) const {
     printList(os, node->next);
 }
 
+bool list::empty() {
+    return getSize() == 0;
+}
+
+
 char list::popListElement() {
     if (head == nullptr) {
         throw std::out_of_range("List is empty");
