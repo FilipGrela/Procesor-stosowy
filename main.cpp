@@ -40,6 +40,7 @@ int listToIntRecursive(const list_node *node, const int multiplier) {
         return 0;
     }
     int digit = node->data - '0';
+
     return digit * multiplier + listToIntRecursive(node->next, multiplier * 10);
 }
 
@@ -90,12 +91,18 @@ void intToStr(int num, char *str) {
     str[i] = '\0';
 }
 
+void handleNumberInsertionRecursive(list *newList, const char *number, int index) {
+    if (index < 0) {
+        processorStack->push(newList);
+        return;
+    }
+    newList->add(number[index]);
+    handleNumberInsertionRecursive(newList, number, index - 1);
+}
+
 void handleNumberInsertion(const char *number) {
     list *newList = new list();
-    for (int i = getStringLength(number) - 1; i >= 0; --i) {
-        newList->add(number[i]);
-    }
-    processorStack->push(newList);
+    handleNumberInsertionRecursive(newList, number, getStringLength(number) - 1);
 }
 
 /**
@@ -145,15 +152,24 @@ void handleRightBracket() {
     processorStack->push(newList);
 }
 
-
-// TODO commets
-void handleLeftBracketRecursive(list *newList, const char *asciiStr, int index) {
+/**
+ * @brief Recursively handles the insertion of ASCII string characters into a list.
+ *
+ * This function inserts characters from the ASCII string `asciiStr` into the list `newList`
+ * starting from the specified `index`. The function continues recursively until all characters
+ * are added to the list.
+ *
+ * @param newList The list to which characters are added.
+ * @param asciiStr The ASCII string whose characters are to be added to the list.
+ * @param index The current index in the ASCII string.
+ */
+void insertAsciiStringRecursive(list *newList, const char *asciiStr, int index) {
     if (index >= getStringLength(asciiStr)) {
         processorStack->push(newList);
         return;
     }
     newList->add(asciiStr[index], newList->getSize());
-    handleLeftBracketRecursive(newList, asciiStr, index + 1);
+    insertAsciiStringRecursive(newList, asciiStr, index + 1);
 }
 
 
@@ -173,7 +189,7 @@ void handleLeftBracket() {
     intToStr(firstCharValue, asciiStr);
 
     list *newList = new list();
-    handleLeftBracketRecursive(newList, asciiStr, 0);
+    insertAsciiStringRecursive(newList, asciiStr, 0);
 }
 
 
@@ -191,7 +207,7 @@ void handleDolarSymbol() {
 
 /**
  * Remove number A from top on the stack.
- * Put A on the on of number B (second number on stack)
+ * Put A on the on top of number B (second number on stack)
  */
 void handleHashSymbol() {
     list *listA = processorStack->pop();
@@ -203,7 +219,7 @@ void handleHashSymbol() {
 /**
  * Add empty list to processor stack
  */
-void handleApostrofSumbol() {
+void handleApostrofSymbol() {
     processorStack->push(new list());
 };
 
@@ -246,7 +262,10 @@ void handleAmpersandSymbol() {
  */
 void handleMinusSymbol() {
     list *top = processorStack->getListByPosition();
-    if (top != nullptr && top->getSize() > 0 && top->getListElement(top->getSize() - 1) == '-') {
+
+    if (top == nullptr) throw std::out_of_range("List is empty handleMinusSymbol main.cpp");
+
+    if (top->getSize() > 0 and top->getListElement(top->getSize() - 1) == '-') {
         top->remove(top->getSize() - 1);
     } else {
         top->add('-', top->getSize());
@@ -274,38 +293,130 @@ void handleDotSymbol(bool &isInputDataRead, int &inputDataIndex) {
  */
 void handleCaretSymbol() {
     list *top = processorStack->getListByPosition();
-    if (top->getSize() > 0 && top->getListElement(top->getSize() - 1) == '-') {
+    if (top->getSize() > 0 and top->getListElement(top->getSize() - 1) == '-') {
         top->remove(top->getSize() - 1);
     }
 }
 
 /**
- * Compare 2 top numbers A B. Remove them from stack.
- * If A < B put 1 on top otherwise put 0.
+ * @brief Removes trailing zeros from a string representing a number.
+ *
+ * This function removes any trailing zeros from the input string `str`.
+ * If the string ends with a minus sign after removing zeros, it includes the minus sign.
+ *
+ * @param str The input string representing a number.
+ * @return The modified string with trailing zeros removed.
  */
-void handleLessSymbol() {
-    int A = listToInt(processorStack->pop());
-    int B = listToInt(processorStack->pop());
+char *removeTrailingZeros(char *str) {
+    int length = getStringLength(str);
+    if (length == 0) return str;
 
-    list *lst = new list();
-    lst->add((A < B) + '0');
+    // Find the position of the last non-zero character
+    int index = length - 1;
+    if (str[index] == '0') {
+        str[index] = '\0';
+        return removeTrailingZeros(str);
+    }
 
-    processorStack->push(lst);
-};
+    // If the string ends with a minus sign, include it
+    if (index > 0 and str[index] == '-' and str[index - 1] == '0') {
+        str[index - 1] = '-';
+        str[index] = '\0';
+        return removeTrailingZeros(str);
+    }
+
+    reverseStrRecursive(str, 0, getStringLength(str) - 1);
+    return str;
+}
+
+int compareStringNumbersRecursive(const char *A, const char *B, int index) {
+    if ((A[index] == '\0' and B[index] == '\0') or
+        (A[index] == '\0' and B[index] == '-') or
+        (B[index] == '\0' and A[index] == '-'))
+        return -1; // They are equal
+
+    if (A[index] != B[index]) return B[index] < A[index];
+
+    return compareStringNumbersRecursive(A, B, index + 1);
+}
+
+
+/**
+ * @brief Compares two string representations of numbers.
+ *
+ * @param A The first string number to compare.
+ * @param B The second string number to compare.
+ * @return -1 when A == B, 0 when A < B, 1 when A > B.
+ */
+int compareStringNumbers(char *A, char *B) {
+    // Check if both strings are empty or equal to "-"
+    if ((A[0] == '\0' or (A[0] == '-' and A[1] == '\0')) and
+        (B[0] == '\0' or (B[0] == '-' and B[1] == '\0'))) {
+        return -1;
+    }
+
+    bool isANegative = (A[0] == '-') or (A[getStringLength(A) - 1] == '-');
+    bool isBNegative = (B[0] == '-') or (B[getStringLength(B) - 1] == '-');
+
+    // Handle cases where one or both numbers are negative
+    if (isANegative and !isBNegative) return 0;
+    if (!isANegative and isBNegative) return 1;
+
+    if (isANegative and isBNegative) {
+        // Both are negative, compare absolute values
+        A++;
+        B++;
+        return compareStringNumbers(B, A); // Reverse comparison for negative numbers
+    }
+
+    // Compare lengths
+    int lenA = getStringLength(A);
+    int lenB = getStringLength(B);
+    if (lenA != lenB) {
+        return lenB < lenA;
+    }
+
+    // Compare lexicographically using recursion
+    return compareStringNumbersRecursive(A, B, 0);
+}
 
 /**
  * Compare 2 top numbers A B. Remove them from stack.
  * If A = B put 1 on top otherwise put 0.
  */
 void handleEqualSymbol() {
-    int A = listToInt(processorStack->pop());
-    int B = listToInt(processorStack->pop());
+    list *listA = processorStack->pop();
+    list *listB = processorStack->pop();
+
+    char *A = listA->getString();
+    char *B = listB->getString();
+
+    A = removeTrailingZeros(A);
+    B = removeTrailingZeros(B);
 
     list *lst = new list();
-    lst->add((A == B) + '0');
-
+    compareStringNumbers(A, B) == -1 ? lst->add('1') : lst->add('0');
     processorStack->push(lst);
 };
+
+/**
+ * Compare 2 top numbers A B. Remove them from stack.
+ * If A < B put 1 on top otherwise put 0.
+ */
+void handleLessSymbol() {
+    char *A = processorStack->pop()->getString();
+    char *B = processorStack->pop()->getString();
+
+    A = removeTrailingZeros(A);
+    B = removeTrailingZeros(B);
+
+    list *lst = new list();
+
+    int result = compareStringNumbers(A, B);
+    lst->add(result == 1 ? '1' : '0');
+
+    processorStack->push(lst);
+}
 
 void handleWykrzyknikSymbol() {
     list *lst = processorStack->pop();
@@ -334,16 +445,14 @@ bool handleQuestionMarkSymbol() {
 int main() {
     init();
 
-    list *top = nullptr;
-
     bool isInputDataRead = false;
-    bool increseInstructionPointer = true;
+    bool increaseInstructionPointer = true;
     int inputDataIndex = 0;
 
     do {
         switch (program[current_step_pointer]) {
             case '\'':
-                handleApostrofSumbol();
+                handleApostrofSymbol();
                 break;
             case ',':
                 handleCommaSymbol();
@@ -400,14 +509,13 @@ int main() {
             case '~':
                 handleTyldaSymbol(current_step_pointer);
                 break;
-            case '?':
-                increseInstructionPointer = handleQuestionMarkSymbol();
-                break;
+            // case '?':
+            //     increseInstructionPointer = handleQuestionMarkSymbol();
+            //     break;
             default:
                 processorStack->getListByPosition()->add(program[current_step_pointer]);
         }
-        if (increseInstructionPointer) current_step_pointer++;
-
+        if (increaseInstructionPointer) current_step_pointer++;
     } while (program[current_step_pointer] != '\0');
 
     return 0;

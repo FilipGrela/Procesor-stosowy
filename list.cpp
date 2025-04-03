@@ -20,6 +20,20 @@ void list::copyList(list_node *&thisNode, list_node *otherNode) {
     }
 }
 
+char *list::getString() const {
+    if (head == nullptr) {
+        return nullptr;
+    }
+    char *str = new char[size + 1];
+    list_node *current = head;
+    for (int i = 0; i < size; ++i) {
+        str[i] = current->data;
+        current = current->next;
+    }
+    str[size] = '\0';
+    return str;
+}
+
 void list::deleteList(list_node *node) {
     if (node == nullptr) {
         return;
@@ -133,7 +147,7 @@ void list::printList(std::ostream &os, list_node *node) const {
     printList(os, node->next);
 }
 
-bool list::empty() {
+bool list::empty() const {
     return getSize() == 0;
 }
 

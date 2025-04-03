@@ -20,11 +20,12 @@ public:
     list(const list &other);
     ~list();
     void add(char value, int index = 0);
-    bool empty();
+    bool empty() const;
     void remove(int index);
     int getSize() const;
     char getListElement(int index);
     char popListElement();
+    char *getString() const;
 
     /***
      * Adds the elements of the other list to the end of this list.
