@@ -308,6 +308,8 @@ char *removeTrailingZeros(char *str) {
         return removeTrailingZeros(str);
     }
 
+
+    reverseStrRecursive(str, 0, getStringLength(str) - 1);
     return str;
 }
 
@@ -355,21 +357,18 @@ int compareStringNumbersRecursive(const char *A, const char *B, int index) {
  * @return -1 when A == B. 0 when A < B. 1 when A > B.
  */
 int compareStringNumbers(char *A, char *B) {
-    A = removeTrailingZeros(A);
-    B = removeTrailingZeros(B);
-
     // Check if both strings are empty or equal to "-"
     if ((A[0] == '\0' || (A[0] == '-' && A[1] == '\0')) &&
         (B[0] == '\0' || (B[0] == '-' && B[1] == '\0'))) {
         return -1;
-        }
+    }
 
     bool isANegative = (A[0] == '-') || (A[getStringLength(A) - 1] == '-');
     bool isBNegative = (B[0] == '-') || (B[getStringLength(B) - 1] == '-');
 
     // Handle cases where one or both numbers are negative
-    if (isANegative && !isBNegative) return 1;
-    if (!isANegative && isBNegative) return 0;
+    if (isANegative && !isBNegative) return 0;
+    if (!isANegative && isBNegative) return 1;
 
     if (isANegative && isBNegative) {
         // Both are negative, compare absolute values
@@ -420,7 +419,6 @@ void handleLessSymbol() {
     B = removeTrailingZeros(B);
 
     list *lst = new list();
-
 
     int result = compareStringNumbers(A, B);
     lst->add(result == 1 ? '1' : '0');
