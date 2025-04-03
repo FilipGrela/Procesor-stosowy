@@ -34,6 +34,7 @@ void init() {
     processorStack = new stack();
     getProgram();
 }
+
 int listToIntRecursive(const list_node *node, const int multiplier) {
     if (node == nullptr or node->data == '-') {
         return 0;
@@ -90,12 +91,18 @@ void intToStr(int num, char *str) {
     str[i] = '\0';
 }
 
+void handleNumberInsertionRecursive(list *newList, const char *number, int index) {
+    if (index < 0) {
+        processorStack->push(newList);
+        return;
+    }
+    newList->add(number[index]);
+    handleNumberInsertionRecursive(newList, number, index - 1);
+}
+
 void handleNumberInsertion(const char *number) {
     list *newList = new list();
-    for (int i = getStringLength(number) - 1; i >= 0; --i) {
-        newList->add(number[i]);
-    }
-    processorStack->push(newList);
+    handleNumberInsertionRecursive(newList, number, getStringLength(number) - 1);
 }
 
 /**
@@ -246,7 +253,10 @@ void handleAmpersandSymbol() {
  */
 void handleMinusSymbol() {
     list *top = processorStack->getListByPosition();
-    if (top != nullptr && top->getSize() > 0 && top->getListElement(top->getSize() - 1) == '-') {
+
+    if (top == nullptr) throw std::out_of_range("List is empty handleMinusSymbol main.cpp");
+
+    if (top->getSize() > 0 && top->getListElement(top->getSize() - 1) == '-') {
         top->remove(top->getSize() - 1);
     } else {
         top->add('-', top->getSize());
@@ -279,32 +289,104 @@ void handleCaretSymbol() {
     }
 }
 
-/**
- * Compare 2 top numbers A B. Remove them from stack.
- * If A < B put 1 on top otherwise put 0.
- */
-void handleLessSymbol() {
-    int A = listToInt(processorStack->pop());
-    int B = listToInt(processorStack->pop());
 
-    list *lst = new list();
-    lst->add((A < B) + '0');
+char *removeTrailingZeros(char *str) {
+    int length = getStringLength(str);
+    if (length == 0) return str;
 
-    processorStack->push(lst);
-};
-
-bool compareListsRecursive(const list_node *nodeA, const list_node *nodeB) {
-    if (nodeA == nullptr && nodeB == nullptr) {
-        return true;
+    // Find the position of the last non-zero character
+    int index = length - 1;
+    if (str[index] == '0') {
+        str[index] = '\0';
+        return removeTrailingZeros(str);
     }
-    if (nodeA == nullptr || nodeB == nullptr || nodeA->data != nodeB->data) {
-        return false;
+
+    // If the string ends with a minus sign, include it
+    if (index > 0 && str[index] == '-' && str[index - 1] == '0') {
+        str[index - 1] = '-';
+        str[index] = '\0';
+        return removeTrailingZeros(str);
     }
-    return compareListsRecursive(nodeA->next, nodeB->next);
+
+    return str;
 }
 
-bool compareLists(const list *listA, const list *listB) {
-    return compareListsRecursive(listA->head, listB->head);
+// bool compareStringsRecursive(char *A, char *B) {
+//     // Pomijanie wiodących zer
+//
+//     A = removeTrailingZeros(A);
+//     B = removeTrailingZeros(B);
+//
+//     // Jeśli oba stringi są puste, są równe
+//     if (*A == '\0' && *B == '\0') return true;
+//
+//     // Jeśli jeden string jest pusty, a drugi jest minusem, to są równe (0 == -0)
+//     if ((*A == '-' && *B == '\0') or (*A == '\0' && *B == '-')) return true;
+//
+//     // Jeśli jeden string jest pusty, a drugi nie, są różne
+//     if (*A == '\0' || *B == '\0') return false;
+//
+//     // Jeśli długości stringów są różne, są różne
+//     if (getStringLength(A) != getStringLength(B)) return false;
+//
+//     // Porównanie znak po znaku
+//     if (*A != *B) return false;
+//
+//     // Rekurencyjne porównanie reszty stringów
+//     return compareStringsRecursive(A + 1, B + 1);
+// }
+
+int compareStringNumbersRecursive(const char *A, const char *B, int index) {
+    if (A[index] == '\0' && B[index] == '\0' or
+        (A[index] == '\0' and B[index] == '-') or
+        (B[index] == '\0' and A[index] == '-'))
+        return -1; // They are equal
+
+    if (A[index] != B[index]) return B[index] < A[index];
+
+    return compareStringNumbersRecursive(A, B, index + 1);
+}
+
+
+/**
+ *
+ * @param A
+ * @param B
+ * @return -1 when A == B. 0 when A < B. 1 when A > B.
+ */
+int compareStringNumbers(char *A, char *B) {
+    A = removeTrailingZeros(A);
+    B = removeTrailingZeros(B);
+
+    // Check if both strings are empty or equal to "-"
+    if ((A[0] == '\0' || (A[0] == '-' && A[1] == '\0')) &&
+        (B[0] == '\0' || (B[0] == '-' && B[1] == '\0'))) {
+        return -1;
+        }
+
+    bool isANegative = (A[0] == '-') || (A[getStringLength(A) - 1] == '-');
+    bool isBNegative = (B[0] == '-') || (B[getStringLength(B) - 1] == '-');
+
+    // Handle cases where one or both numbers are negative
+    if (isANegative && !isBNegative) return 1;
+    if (!isANegative && isBNegative) return 0;
+
+    if (isANegative && isBNegative) {
+        // Both are negative, compare absolute values
+        A++;
+        B++;
+        return compareStringNumbers(B, A); // Reverse comparison for negative numbers
+    }
+
+    // Compare lengths
+    int lenA = getStringLength(A);
+    int lenB = getStringLength(B);
+    if (lenA != lenB) {
+        return lenB < lenA;
+    }
+
+    // Compare lexicographically using recursion
+    return compareStringNumbersRecursive(A, B, 0);
 }
 
 /**
@@ -315,8 +397,36 @@ void handleEqualSymbol() {
     list *listA = processorStack->pop();
     list *listB = processorStack->pop();
 
-    compareLists(listA, listB) ? listA->add('1') : listA->add('0');
+    char *A = listA->getString();
+    char *B = listB->getString();
+
+    A = removeTrailingZeros(A);
+    B = removeTrailingZeros(B);
+
+    list *lst = new list();
+    compareStringNumbers(A, B) == -1 ? lst->add('1') : lst->add('0');
+    processorStack->push(lst);
 };
+
+/**
+ * Compare 2 top numbers A B. Remove them from stack.
+ * If A < B put 1 on top otherwise put 0.
+ */
+void handleLessSymbol() {
+    char *A = processorStack->pop()->getString();
+    char *B = processorStack->pop()->getString();
+
+    A = removeTrailingZeros(A);
+    B = removeTrailingZeros(B);
+
+    list *lst = new list();
+
+
+    int result = compareStringNumbers(A, B);
+    lst->add(result == 1 ? '1' : '0');
+
+    processorStack->push(lst);
+}
 
 void handleWykrzyknikSymbol() {
     list *lst = processorStack->pop();
@@ -416,7 +526,6 @@ int main() {
                 processorStack->getListByPosition()->add(program[current_step_pointer]);
         }
         if (increseInstructionPointer) current_step_pointer++;
-
     } while (program[current_step_pointer] != '\0');
 
     return 0;

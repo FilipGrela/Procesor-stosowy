@@ -25,6 +25,7 @@ public:
     int getSize() const;
     char getListElement(int index);
     char popListElement();
+    char *getString() const;
 
     /***
      * Adds the elements of the other list to the end of this list.
