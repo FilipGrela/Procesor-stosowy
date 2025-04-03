@@ -34,12 +34,12 @@ void init() {
     processorStack = new stack();
     getProgram();
 }
-
 int listToIntRecursive(const list_node *node, const int multiplier) {
     if (node == nullptr or node->data == '-') {
         return 0;
     }
     int digit = node->data - '0';
+
     return digit * multiplier + listToIntRecursive(node->next, multiplier * 10);
 }
 
@@ -293,18 +293,29 @@ void handleLessSymbol() {
     processorStack->push(lst);
 };
 
+bool compareListsRecursive(const list_node *nodeA, const list_node *nodeB) {
+    if (nodeA == nullptr && nodeB == nullptr) {
+        return true;
+    }
+    if (nodeA == nullptr || nodeB == nullptr || nodeA->data != nodeB->data) {
+        return false;
+    }
+    return compareListsRecursive(nodeA->next, nodeB->next);
+}
+
+bool compareLists(const list *listA, const list *listB) {
+    return compareListsRecursive(listA->head, listB->head);
+}
+
 /**
  * Compare 2 top numbers A B. Remove them from stack.
  * If A = B put 1 on top otherwise put 0.
  */
 void handleEqualSymbol() {
-    int A = listToInt(processorStack->pop());
-    int B = listToInt(processorStack->pop());
+    list *listA = processorStack->pop();
+    list *listB = processorStack->pop();
 
-    list *lst = new list();
-    lst->add((A == B) + '0');
-
-    processorStack->push(lst);
+    compareLists(listA, listB) ? listA->add('1') : listA->add('0');
 };
 
 void handleWykrzyknikSymbol() {
@@ -333,8 +344,6 @@ bool handleQuestionMarkSymbol() {
 
 int main() {
     init();
-
-    list *top = nullptr;
 
     bool isInputDataRead = false;
     bool increseInstructionPointer = true;
@@ -400,9 +409,9 @@ int main() {
             case '~':
                 handleTyldaSymbol(current_step_pointer);
                 break;
-            case '?':
-                increseInstructionPointer = handleQuestionMarkSymbol();
-                break;
+            // case '?':
+            //     increseInstructionPointer = handleQuestionMarkSymbol();
+            //     break;
             default:
                 processorStack->getListByPosition()->add(program[current_step_pointer]);
         }

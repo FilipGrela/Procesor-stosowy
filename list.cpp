@@ -133,7 +133,7 @@ void list::printList(std::ostream &os, list_node *node) const {
     printList(os, node->next);
 }
 
-bool list::empty() {
+bool list::empty() const {
     return getSize() == 0;
 }
 

@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-stack::stack() : size(0), head(nullptr){}
+stack::stack() : head(nullptr), size(0) {}
 
 void stack::deleteStack(stack_node *node) {
     if (node == nullptr) {
@@ -30,7 +30,7 @@ void stack::copyStack(stack_node *&dest, stack_node *src) {
     copyStack(dest->next, src->next);
 }
 
-stack::stack(const stack &other) : size(other.size), head(nullptr) {
+stack::stack(const stack &other) : head(nullptr), size(other.size) {
     copyStack(head, other.head);
 }
 
