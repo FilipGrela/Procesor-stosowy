@@ -418,11 +418,22 @@ void handleLessSymbol() {
     processorStack->push(lst);
 }
 
+bool isListIsEmptyOrZero(list *lst) {
+    if (lst->empty()) {
+        return true;
+    }
+    if (lst->getSize() == 1 and lst->getListElement(0) == '0') {
+        return true;
+    }
+    return false;
+}
+
 void handleWykrzyknikSymbol() {
     list *lst = processorStack->pop();
     list *newList = new list();
 
-    if (lst->empty() or (lst->getSize() == 1 and lst->getListElement(0) == '0')) {
+    if (isListIsEmptyOrZero(lst)) {
+
         newList->add('1');
         processorStack->push(newList);
         return;
@@ -438,18 +449,34 @@ void handleTyldaSymbol(int number) {
     handleNumberInsertion(str);
 };
 
-bool handleQuestionMarkSymbol() {
-    return true;
+
+/**
+ * @brief Conditional jump operation.
+ *
+ * This function performs a conditional jump based on the top elements of the stack.
+ * It pops a number T from the stack, then pops a list W from the stack.
+ * If the list W is not empty and does not contain only the character '0',
+ * it sets the instruction pointer to the value of T and does not increment the instruction pointer.
+ */
+bool handleQuestionMarkSymbol(int &current_step_pointer) {
+    list *lstT = processorStack->pop();
+    list *lstW = processorStack->pop();
+
+    if (isListIsEmptyOrZero(lstW)) return true;
+
+    current_step_pointer = listToInt(lstT);
+
+    return false;
 };
 
 int main() {
     init();
 
     bool isInputDataRead = false;
-    bool increaseInstructionPointer = true;
     int inputDataIndex = 0;
 
     do {
+        bool increaseInstructionPointer = true;
         switch (program[current_step_pointer]) {
             case '\'':
                 handleApostrofSymbol();
@@ -509,9 +536,9 @@ int main() {
             case '~':
                 handleTyldaSymbol(current_step_pointer);
                 break;
-            // case '?':
-            //     increseInstructionPointer = handleQuestionMarkSymbol();
-            //     break;
+            case '?':
+                increaseInstructionPointer = handleQuestionMarkSymbol(current_step_pointer);
+                break;
             default:
                 processorStack->getListByPosition()->add(program[current_step_pointer]);
         }
