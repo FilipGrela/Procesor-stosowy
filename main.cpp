@@ -12,8 +12,11 @@ int current_step_pointer;
 stack *processorStack;
 ///< Stos procesora.
 
+
+int wywolanie = 0;
+
 int getStringLength(const char *str, int acc = 0) {
-    if (*str == '\0') {
+    if (str == nullptr or *str == '\0') {
         return acc;
     }
     return getStringLength(str + 1, acc + 1);
@@ -54,13 +57,22 @@ int listToInt(list *lst) {
 }
 
 void reverseStrRecursive(char *str, int start, int end) {
+    end--;
+    if (getStringLength(str) <= 1) {
+        return;
+    }
+
+    if (str[end] == '-') {
+        end--;
+    }
+
     if (start >= end) {
         return;
     }
     char temp = str[start];
     str[start] = str[end];
     str[end] = temp;
-    reverseStrRecursive(str, start + 1, end - 1);
+    reverseStrRecursive(str, start + 1, end);
 }
 
 void intToStrRecursive(int num, char *str, int &i) {
@@ -105,22 +117,6 @@ void handleNumberInsertion(const char *number) {
     handleNumberInsertionRecursive(newList, number, getStringLength(number) - 1);
 }
 
-/**
- * Add 2 numbers on top of the stack. Remove them, add new number on top.
- */
-void handlePlusSymbol() {
-    list *listA = processorStack->pop();
-    list *listB = processorStack->pop();
-
-    int A = listToInt(listA);
-    int B = listToInt(listB);
-
-    int C = A + B;
-    char result[20];
-    intToStr(C, result);
-
-    handleNumberInsertion(result);
-}
 
 /**
  * Remove top number from top of stack (A).
@@ -131,7 +127,7 @@ void handleAtSymbol() {
 
     int A = listToInt(listA);
 
-    list *list_on_position = processorStack->getListByPosition(A);
+    list *list_on_position = new list(*processorStack->getListByPosition(A));
     processorStack->push(list_on_position);
 }
 
@@ -210,7 +206,9 @@ void handleDolarSymbol() {
  * Put A on the on top of number B (second number on stack)
  */
 void handleHashSymbol() {
+    if (processorStack->getSize() < 2) return;
     list *listA = processorStack->pop();
+
     list *listB = processorStack->getListByPosition();
 
     listB->mergeLists(listA);
@@ -219,7 +217,7 @@ void handleHashSymbol() {
 /**
  * Add empty list to processor stack
  */
-void handleApostrofSymbol() {
+void addEmptyList() {
     processorStack->push(new list());
 };
 
@@ -236,6 +234,9 @@ void handleCommaSymbol() {
  * Put on stack copy of the list form top of stack.
  */
 void handleColonSymbol() {
+    if (processorStack->getSize() == 0) {
+        return;
+    }
     list *top = processorStack->getListByPosition();
     list *newList = new list(*top);
     processorStack->push(newList);
@@ -298,7 +299,28 @@ void handleCaretSymbol() {
     }
 }
 
-/**
+// char *removeLeadingZeros(char *str) {
+//     int length = getStringLength(str);
+//     int index = 0;
+//
+//     // Find the position of the first non-zero character
+//     while (index < length && str[index] == '0') {
+//         index++;
+//     }
+//
+//     // If all characters are zeros, return "0"
+//     if (index == length) {
+//         str[0] = '0';
+//         str[1] = '\0';
+//         return str;
+//     }
+//
+//     // Shift the string to remove leading zeros
+//     memmove(str, str + index, length - index + 1);
+//     return str;
+// }
+
+/**`
  * @brief Removes trailing zeros from a string representing a number.
  *
  * This function removes any trailing zeros from the input string `str`.
@@ -307,9 +329,14 @@ void handleCaretSymbol() {
  * @param str The input string representing a number.
  * @return The modified string with trailing zeros removed.
  */
-char *removeTrailingZeros(char *str) {
+char *removeTrailingZeros(char *str, bool reverse = true) {
     int length = getStringLength(str);
-    if (length == 0) return str;
+    if (length == 0 ||
+        (length == 1 && str[0] == '0') ||
+        (length == 2 && str[0] == '0' && str[1] == '-')) {
+        str[1] = '\0';
+        return str;
+    }
 
     // Find the position of the last non-zero character
     int index = length - 1;
@@ -325,14 +352,16 @@ char *removeTrailingZeros(char *str) {
         return removeTrailingZeros(str);
     }
 
-    reverseStrRecursive(str, 0, getStringLength(str) - 1);
+    reverse ? reverseStrRecursive(str, 0, length) : void(0);
     return str;
 }
 
 int compareStringNumbersRecursive(const char *A, const char *B, int index) {
     if ((A[index] == '\0' and B[index] == '\0') or
         (A[index] == '\0' and B[index] == '-') or
-        (B[index] == '\0' and A[index] == '-'))
+        (B[index] == '\0' and A[index] == '-') or
+        (A[0] == '0' and A[1] == '\0' and B[0] == '0' and B[1] == '-' and B[1] == '\0') or
+        (B[0] == '0' and B[1] == '\0' and A[0] == '0' and A[1] == '-' and A[1] == '\0'))
         return -1; // They are equal
 
     if (A[index] != B[index]) return B[index] < A[index];
@@ -351,12 +380,17 @@ int compareStringNumbersRecursive(const char *A, const char *B, int index) {
 int compareStringNumbers(char *A, char *B) {
     // Check if both strings are empty or equal to "-"
     if ((A[0] == '\0' or (A[0] == '-' and A[1] == '\0')) and
-        (B[0] == '\0' or (B[0] == '-' and B[1] == '\0'))) {
+        (B[0] == '\0' or (B[0] == '-' and B[1] == '\0')) or
+        (A[0] == '0' and A[1] == '\0' and B[0] == '0' and B[1] == '-' and B[2] == '\0') or
+        (B[0] == '0' and B[1] == '\0' and A[0] == '0' and A[1] == '-' and A[2] == '\0')) {
         return -1;
     }
 
-    bool isANegative = (A[0] == '-') or (A[getStringLength(A) - 1] == '-');
-    bool isBNegative = (B[0] == '-') or (B[getStringLength(B) - 1] == '-');
+    int lengthA = getStringLength(A);
+    int lengthB = getStringLength(B);
+
+    bool isANegative = (A[0] == '-') or (A[lengthA - 1] == '-');
+    bool isBNegative = (B[0] == '-') or (B[lengthB - 1] == '-');
 
     // Handle cases where one or both numbers are negative
     if (isANegative and !isBNegative) return 0;
@@ -364,16 +398,14 @@ int compareStringNumbers(char *A, char *B) {
 
     if (isANegative and isBNegative) {
         // Both are negative, compare absolute values
-        A++;
-        B++;
+        A[lengthA - 1] = '\0';
+        B[lengthB - 1] = '\0';
         return compareStringNumbers(B, A); // Reverse comparison for negative numbers
     }
 
     // Compare lengths
-    int lenA = getStringLength(A);
-    int lenB = getStringLength(B);
-    if (lenA != lenB) {
-        return lenB < lenA;
+    if (lengthA != lengthB) {
+        return lengthB < lengthA;
     }
 
     // Compare lexicographically using recursion
@@ -385,19 +417,37 @@ int compareStringNumbers(char *A, char *B) {
  * If A = B put 1 on top otherwise put 0.
  */
 void handleEqualSymbol() {
+    list *newList = new list();
+    if (processorStack->getSize() < 2) {
+        newList->add('0');
+        processorStack->push(newList);
+        return;
+    }
     list *listA = processorStack->pop();
     list *listB = processorStack->pop();
 
     char *A = listA->getString();
     char *B = listB->getString();
 
+    if (A == nullptr or B == nullptr) {
+        if (A == nullptr and B == nullptr) {
+            newList->add('1');
+            processorStack->push(newList);
+            return;
+        }
+        newList->add('0');
+        processorStack->push(newList);
+        return;
+    }
+
     A = removeTrailingZeros(A);
     B = removeTrailingZeros(B);
 
-    list *lst = new list();
-    compareStringNumbers(A, B) == -1 ? lst->add('1') : lst->add('0');
-    processorStack->push(lst);
+
+    compareStringNumbers(A, B) == -1 ? newList->add('1') : newList->add('0');
+    processorStack->push(newList);
 };
+
 
 /**
  * Compare 2 top numbers A B. Remove them from stack.
@@ -418,11 +468,21 @@ void handleLessSymbol() {
     processorStack->push(lst);
 }
 
+bool isListIsEmptyOrZero(list *lst) {
+    if (lst->empty()) {
+        return true;
+    }
+    if (lst->getSize() == 1 and lst->getListElement(0) == '0') {
+        return true;
+    }
+    return false;
+}
+
 void handleWykrzyknikSymbol() {
     list *lst = processorStack->pop();
     list *newList = new list();
 
-    if (lst->empty() or (lst->getSize() == 1 and lst->getListElement(0) == '0')) {
+    if (isListIsEmptyOrZero(lst)) {
         newList->add('1');
         processorStack->push(newList);
         return;
@@ -438,21 +498,173 @@ void handleTyldaSymbol(int number) {
     handleNumberInsertion(str);
 };
 
-bool handleQuestionMarkSymbol() {
-    return true;
+
+/**
+ * @brief Conditional jump operation.
+ *
+ * This function performs a conditional jump based on the top elements of the stack.
+ * It pops a number T from the stack, then pops a list W from the stack.
+ * If the list W is not empty and does not contain only the character '0',
+ * it sets the instruction pointer to the value of T and does not increment the instruction pointer.
+ */
+bool handleQuestionMarkSymbol(int &current_step_pointer) {
+    list *lstT = processorStack->pop();
+    list *lstW = processorStack->pop();
+
+    if (isListIsEmptyOrZero(lstW)) return true;
+
+    current_step_pointer = listToInt(lstT);
+
+    return false;
 };
+
+void subtractLargeNumbersRecursive(const char *num1, const char *num2, int i, int j, int borrow, char *result, int &k) {
+    if (i < 0 && j < 0 && borrow == 0) {
+        result[k] = '\0';
+        reverseStrRecursive(result, 0, k);
+        return;
+    }
+
+    int n1 = (i >= 0) ? num1[i] - '0' : 0;
+    int n2 = (j >= 0) ? num2[j] - '0' : 0;
+    int current = n1 - n2 - borrow;
+    if (current < 0) {
+        current += 10;
+        borrow = 1;
+    } else {
+        borrow = 0;
+    }
+    result[k++] = '0' + current;
+
+    subtractLargeNumbersRecursive(num1, num2, i - 1, j - 1, borrow, result, k);
+}
+
+char *subtractLargeNumbers(char *num1, char *num2) {
+    int len1 = getStringLength(num1);
+    int len2 = getStringLength(num2);
+
+    // Determine the maximum length and allocate space for the result
+    int maxLen = len1 > len2 ? len1 : len2;
+    char *result = new char[maxLen + 2]; // +2 for possible '-' sign and '\0'
+    int k = 0;
+
+    // Determine if the result should be negative
+    bool isNegative = false;
+    if (compareStringNumbers(num1, num2) == 0) {
+        // Swap the numbers if num1 is smaller than num2
+        char *temp = num1;
+        int tempLen = len1;
+        num1 = num2;
+        len1 = len2;
+        num2 = temp;
+        len2 = tempLen;
+
+        isNegative = true;
+    }
+
+    // Perform the subtraction recursively
+    subtractLargeNumbersRecursive(num1, num2, len1 - 1, len2 - 1, 0, result, k);
+
+    // Add the negative sign if the result is negative
+    if (isNegative) {
+        result[k++] = '-';
+        result[k] = '\0';
+    }
+
+    return result;
+}
+
+void addLargeNumbersRecursive(const char *num1, const char *num2, int i, int j, int carry, char *result, int &k) {
+    if (i < 0 && j < 0 && carry == 0) {
+        result[k] = '\0';
+        return;
+    }
+
+    int n1 = (i >= 0) ? num1[i] - '0' : 0;
+    int n2 = (j >= 0) ? num2[j] - '0' : 0;
+    int current = n1 + n2 + carry;
+    carry = current / 10;
+    current = current % 10;
+    result[k++] = '0' + current;
+
+    addLargeNumbersRecursive(num1, num2, i - 1, j - 1, carry, result, k);
+}
+
+char *addLargeNumbers(char const *num1, const char *num2) {
+    int len1 = getStringLength(num1);
+    int len2 = getStringLength(num2);
+
+    // Allocate space for the result, including space for carry-over
+    int maxLen = len1 > len2 ? len1 : len2;
+    char *result = new char[maxLen + 3]; // +2 for possible carry and '\0'
+    int k = 0;
+
+    addLargeNumbersRecursive(num1, num2, len1 - 1, len2 - 1, 0, result, k);
+
+    return result;
+}
+
+/**
+ * Add 2 numbers on top of the stack. Remove them, add new number on top.
+ */
+void handlePlusSymbol() {
+    list *listA = processorStack->pop();
+    list *listB = processorStack->pop();
+
+    char *numberA = listA->getString();
+    char *numberB = listB->getString();
+    removeTrailingZeros(numberA);
+    removeTrailingZeros(numberB);
+
+    int lengthA = getStringLength(numberA);
+    int lengthB = getStringLength(numberB);
+
+    // Check if the input numbers are negative
+    bool isANegative = (numberA[lengthA - 1] == '-');
+    bool isBNegative = (numberB[lengthB - 1] == '-');
+
+    // Remove the negative sign if present
+    if (isANegative) numberA[lengthA - 1] = '\0';
+    if (isBNegative) numberB[lengthB - 1] = '\0';
+
+    char *result;
+    if (isANegative xor isBNegative) {
+        // If one number is negative, subtract
+        if (isANegative) {
+            result = subtractLargeNumbers(numberB, numberA);
+        } else {
+            result = subtractLargeNumbers(numberA, numberB);
+        }
+        reverseStrRecursive(result, 0, getStringLength(result));
+    } else {
+        // If both numbers are positive or both are negative, add
+        result = addLargeNumbers(numberA, numberB);
+        if (isANegative && isBNegative) {
+            int resultLength = getStringLength(result);
+            // If both numbers are negative, add and make the result negative
+            result[resultLength] = '-';
+            result[resultLength + 1] = '\0';
+        }
+    }
+
+
+    removeTrailingZeros(result);
+    reverseStrRecursive(result, 0, getStringLength(result));
+    handleNumberInsertion(result);
+}
 
 int main() {
     init();
 
     bool isInputDataRead = false;
-    bool increaseInstructionPointer = true;
     int inputDataIndex = 0;
+    char str = '\0';
 
     do {
+        bool increaseInstructionPointer = true;
         switch (program[current_step_pointer]) {
             case '\'':
-                handleApostrofSymbol();
+                addEmptyList();
                 break;
             case ',':
                 handleCommaSymbol();
@@ -482,8 +694,11 @@ int main() {
                 handleCaretSymbol();
                 break;
             case '>':
-                printChar(processorStack->getListByPosition()->popListElement());
-                processorStack->pop();
+                if (!processorStack->empty() && processorStack->getListByPosition()->getSize() > 0) {
+                    str = processorStack->getListByPosition()->popListElement();
+                    processorStack->pop();
+                }
+                printChar(str);
                 break;
             case ']':
                 handleRightBracket();
@@ -509,14 +724,24 @@ int main() {
             case '~':
                 handleTyldaSymbol(current_step_pointer);
                 break;
-            // case '?':
-            //     increseInstructionPointer = handleQuestionMarkSymbol();
-            //     break;
+            case '?':
+                if (processorStack->getSize() < 2) {
+                    increaseInstructionPointer = true;
+                    break;
+                }
+                increaseInstructionPointer = handleQuestionMarkSymbol(current_step_pointer);
+                break;
             default:
-                processorStack->getListByPosition()->add(program[current_step_pointer]);
+                char value = program[current_step_pointer];
+                if (processorStack->empty()) {
+                    addEmptyList();
+                }
+                processorStack->getListByPosition()->add(value);
         }
         if (increaseInstructionPointer) current_step_pointer++;
-    } while (program[current_step_pointer] != '\0');
 
-    return 0;
+        wywolanie++;
+     } while (program[current_step_pointer] != '\0');
+
+     return 0;
 }

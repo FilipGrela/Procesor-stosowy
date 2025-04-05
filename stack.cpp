@@ -66,8 +66,8 @@ int stack::push(list *value) {
 }
 
 void stack::flipTopList() {
-    if (head == nullptr) {
-        throw std::out_of_range("Stack is empty");
+    if (head == nullptr or size <= 1) {
+        return;
     }
     list *temp = head->data;
     head->data = head->next->data;
@@ -76,7 +76,7 @@ void stack::flipTopList() {
 
 list* &stack::getListByPosition(int index, stack_node *node) {
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Index out of range in getListByPosition.");
+        // throw std::out_of_range("Index out of range in getListByPosition.");
     }
     if (node == nullptr) {
         node = head;
@@ -88,7 +88,7 @@ list* &stack::getListByPosition(int index, stack_node *node) {
 }
 
 list* stack::pop() {
-    assert(!empty() && "Stack is empty. You tried to pop empty stack!");
+    // assert(!empty() && "Stack is empty. You tried to pop empty stack!");
     stack_node *temp = head;
     list *value = head->data;
     head = head->next;
