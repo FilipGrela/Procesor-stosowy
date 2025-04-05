@@ -56,7 +56,7 @@ void list::addOnBegining(const char value) {
 
 void list::add(const char value, int index) {
     if (index < 0 || index > size) {
-        throw std::out_of_range("Index out of range add");
+        // throw std::out_of_range("Index out of range add");
     }
     if (index == 0) {
         addOnBegining(value);
@@ -110,7 +110,7 @@ void list::mergeListsRecursive(list_node *current, list_node *otherHead) {
 
 void list::remove(const int index) {
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Index out of range remove");
+        // throw std::out_of_range("Index out of range remove");
     }
     removeNode(head, index);
 }
@@ -121,7 +121,7 @@ int list::getSize() const {
 
 char list::getElementRecursive(list_node *node, int index) const {
     if (node == nullptr) {
-        throw std::out_of_range("Index out of range getElementRecursive");
+        // throw std::out_of_range("Index out of range getElementRecursive");
     }
     if (index == 0) {
         return node->data;
@@ -134,7 +134,7 @@ char list::getListElement(int index) {
         return '\0';
     }
     if (index < 0 || index >= size) {
-        throw std::out_of_range("Index out of range getListElement");
+        // throw std::out_of_range("Index out of range getListElement");
     }
     return getElementRecursive(head, index);
 }
@@ -154,7 +154,7 @@ bool list::empty() const {
 
 char list::popListElement() {
     if (head == nullptr) {
-        throw std::out_of_range("List is empty");
+        return '\0';
     }
     char value = head->data;
     list_node *temp = head;

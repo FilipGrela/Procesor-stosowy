@@ -1,0 +1,11 @@
+Hello world!
+9 ticks left
+8 ticks left
+7 ticks left
+6 ticks left
+5 ticks left
+4 ticks left
+3 ticks left
+2 ticks left
+1 ticks left
+end of story

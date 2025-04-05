@@ -12,8 +12,11 @@ int current_step_pointer;
 stack *processorStack;
 ///< Stos procesora.
 
+
+int wywolanie = 0;
+
 int getStringLength(const char *str, int acc = 0) {
-    if (*str == '\0') {
+    if (str == nullptr or *str == '\0') {
         return acc;
     }
     return getStringLength(str + 1, acc + 1);
@@ -124,7 +127,7 @@ void handleAtSymbol() {
 
     int A = listToInt(listA);
 
-    list *list_on_position = processorStack->getListByPosition(A);
+    list *list_on_position = new list(*processorStack->getListByPosition(A));
     processorStack->push(list_on_position);
 }
 
@@ -203,7 +206,9 @@ void handleDolarSymbol() {
  * Put A on the on top of number B (second number on stack)
  */
 void handleHashSymbol() {
+    if (processorStack->getSize() < 2) return;
     list *listA = processorStack->pop();
+
     list *listB = processorStack->getListByPosition();
 
     listB->mergeLists(listA);
@@ -212,7 +217,7 @@ void handleHashSymbol() {
 /**
  * Add empty list to processor stack
  */
-void handleApostrofSymbol() {
+void addEmptyList() {
     processorStack->push(new list());
 };
 
@@ -229,6 +234,9 @@ void handleCommaSymbol() {
  * Put on stack copy of the list form top of stack.
  */
 void handleColonSymbol() {
+    if (processorStack->getSize() == 0) {
+        return;
+    }
     list *top = processorStack->getListByPosition();
     list *newList = new list(*top);
     processorStack->push(newList);
@@ -409,18 +417,35 @@ int compareStringNumbers(char *A, char *B) {
  * If A = B put 1 on top otherwise put 0.
  */
 void handleEqualSymbol() {
+    list *newList = new list();
+    if (processorStack->getSize() < 2) {
+        newList->add('0');
+        processorStack->push(newList);
+        return;
+    }
     list *listA = processorStack->pop();
     list *listB = processorStack->pop();
 
     char *A = listA->getString();
     char *B = listB->getString();
 
+    if (A == nullptr or B == nullptr) {
+        if (A == nullptr and B == nullptr) {
+            newList->add('1');
+            processorStack->push(newList);
+            return;
+        }
+        newList->add('0');
+        processorStack->push(newList);
+        return;
+    }
+
     A = removeTrailingZeros(A);
     B = removeTrailingZeros(B);
 
-    list *lst = new list();
-    compareStringNumbers(A, B) == -1 ? lst->add('1') : lst->add('0');
-    processorStack->push(lst);
+
+    compareStringNumbers(A, B) == -1 ? newList->add('1') : newList->add('0');
+    processorStack->push(newList);
 };
 
 
@@ -595,12 +620,12 @@ void handlePlusSymbol() {
     int lengthB = getStringLength(numberB);
 
     // Check if the input numbers are negative
-    bool isANegative = (numberA[lengthA-1] == '-');
-    bool isBNegative = (numberB[lengthB-1] == '-');
+    bool isANegative = (numberA[lengthA - 1] == '-');
+    bool isBNegative = (numberB[lengthB - 1] == '-');
 
     // Remove the negative sign if present
-    if (isANegative) numberA[lengthA-1] = '\0';
-    if (isBNegative) numberB[lengthB-1] = '\0';
+    if (isANegative) numberA[lengthA - 1] = '\0';
+    if (isBNegative) numberB[lengthB - 1] = '\0';
 
     char *result;
     if (isANegative xor isBNegative) {
@@ -633,12 +658,13 @@ int main() {
 
     bool isInputDataRead = false;
     int inputDataIndex = 0;
+    char str = '\0';
 
     do {
         bool increaseInstructionPointer = true;
         switch (program[current_step_pointer]) {
             case '\'':
-                handleApostrofSymbol();
+                addEmptyList();
                 break;
             case ',':
                 handleCommaSymbol();
@@ -668,8 +694,11 @@ int main() {
                 handleCaretSymbol();
                 break;
             case '>':
-                printChar(processorStack->getListByPosition()->popListElement());
-                processorStack->pop();
+                if (!processorStack->empty() && processorStack->getListByPosition()->getSize() > 0) {
+                    str = processorStack->getListByPosition()->popListElement();
+                    processorStack->pop();
+                }
+                printChar(str);
                 break;
             case ']':
                 handleRightBracket();
@@ -696,13 +725,23 @@ int main() {
                 handleTyldaSymbol(current_step_pointer);
                 break;
             case '?':
+                if (processorStack->getSize() < 2) {
+                    increaseInstructionPointer = true;
+                    break;
+                }
                 increaseInstructionPointer = handleQuestionMarkSymbol(current_step_pointer);
                 break;
             default:
-                processorStack->getListByPosition()->add(program[current_step_pointer]);
+                char value = program[current_step_pointer];
+                if (processorStack->empty()) {
+                    addEmptyList();
+                }
+                processorStack->getListByPosition()->add(value);
         }
         if (increaseInstructionPointer) current_step_pointer++;
-    } while (program[current_step_pointer] != '\0');
 
-    return 0;
+        wywolanie++;
+     } while (program[current_step_pointer] != '\0');
+
+     return 0;
 }
