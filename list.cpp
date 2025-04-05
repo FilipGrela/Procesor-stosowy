@@ -24,7 +24,7 @@ char *list::getString() const {
     if (head == nullptr) {
         return nullptr;
     }
-    char *str = new char[size + 1];
+    char *str = new char[size+2];
     list_node *current = head;
     for (int i = 0; i < size; ++i) {
         str[i] = current->data;
