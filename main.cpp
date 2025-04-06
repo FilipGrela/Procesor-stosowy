@@ -264,9 +264,7 @@ bool isListIsEmptyOrZero(list *lst) {
 int compareStringNumbersRecursive(const char *A, const char *B, int index) {
     if ((A[index] == '\0' and B[index] == '\0') or
         (A[index] == '\0' and B[index] == '-') or
-        (B[index] == '\0' and A[index] == '-') or
-        (A[0] == '0' and A[1] == '\0' and B[0] == '0' and B[1] == '-' and B[1] == '\0') or
-        (B[0] == '0' and B[1] == '\0' and A[0] == '0' and A[1] == '-' and A[1] == '\0'))
+        (B[index] == '\0' and A[index] == '-'))
         return -1; // They are equal
 
     if (A[index] != B[index]) return B[index] < A[index];
@@ -284,10 +282,9 @@ int compareStringNumbersRecursive(const char *A, const char *B, int index) {
  */
 int compareStringNumbers(char *A, char *B) {
     // Check if both strings are empty or equal to "-"
-    if ((A[0] == '\0' or (A[0] == '-' and A[1] == '\0')) and
-        (B[0] == '\0' or (B[0] == '-' and B[1] == '\0')) or
-        (A[0] == '0' and A[1] == '\0' and B[0] == '0' and B[1] == '-' and B[2] == '\0') or
-        (B[0] == '0' and B[1] == '\0' and A[0] == '0' and A[1] == '-' and A[2] == '\0')) {
+    if ((A[0] == '\0' and B[0] == '\0') or
+        (A[0] == '\0' and B[0] == '-') or
+        (B[0] == '\0' and A[0] == '-')) {
         return -1;
     }
 
