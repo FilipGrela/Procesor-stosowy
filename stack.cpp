@@ -4,8 +4,6 @@
 
 #include "stack.h"
 
-#include <assert.h>
-
 stack::stack() : head(nullptr), size(0) {}
 
 void stack::deleteStack(stack_node *node) {
@@ -34,6 +32,12 @@ stack::stack(const stack &other) : head(nullptr), size(other.size) {
     copyStack(head, other.head);
 }
 
+/**
+ * Assignment operator for the stack class.
+ *
+ * @param other The stack object to be assigned.
+ * @return Reference to the current stack object.
+ */
 stack &stack::operator=(const stack &other) {
     if (this != &other) {
         deleteStack(head);
@@ -43,7 +47,7 @@ stack &stack::operator=(const stack &other) {
     return *this;
 }
 
-void stack::printStack(std::ostream& os, stack_node *node, int index) const {
+void stack::printStack(std::ostream &os, stack_node *node, int index) const {
     if (node == nullptr) {
         return;
     }
@@ -51,15 +55,15 @@ void stack::printStack(std::ostream& os, stack_node *node, int index) const {
     os << index << ": " << *(node->data) << "\n";
 }
 
-std::ostream& operator<<(std::ostream& os, const stack &other) {
+std::ostream &operator<<(std::ostream &os, const stack &other) {
     other.printStack(os, other.head, 0);
     return os;
 }
 
 int stack::push(list *value) {
     stack_node *newNode = new stack_node{
-        value,
-        head
+            value,
+            head
     };
     head = newNode;
     return ++size;
@@ -74,10 +78,7 @@ void stack::flipTopList() {
     head->next->data = temp;
 }
 
-list* &stack::getListByPosition(int index, stack_node *node) {
-    if (index < 0 || index >= size) {
-        // throw std::out_of_range("Index out of range in getListByPosition.");
-    }
+list *&stack::getListByPosition(int index, stack_node *node) {
     if (node == nullptr) {
         node = head;
     }
@@ -87,8 +88,7 @@ list* &stack::getListByPosition(int index, stack_node *node) {
     return getListByPosition(index - 1, node->next);
 }
 
-list* stack::pop() {
-    // assert(!empty() && "Stack is empty. You tried to pop empty stack!");
+list *stack::pop() {
     stack_node *temp = head;
     list *value = head->data;
     head = head->next;
@@ -100,7 +100,6 @@ list* stack::pop() {
 int stack::getSize() const {
     return this->size;
 }
-
 
 bool stack::empty() const {
     return head == nullptr;

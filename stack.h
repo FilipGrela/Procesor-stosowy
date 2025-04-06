@@ -6,7 +6,6 @@
 #define STACK_H
 
 #include <iostream>
-
 #include "list.h"
 
 struct stack_node {
@@ -22,19 +21,17 @@ class stack {
 public:
     stack();
     ~stack();
-    int push(list*);
     int getSize() const;
-    list* pop();
     bool empty() const;
     void flipTopList();
+    int push(list*);
+    list* pop();
     list* &getListByPosition(int index = 0, stack_node *node = nullptr);
 private:
+    int size;
     void deleteStack(stack_node *node);
     void copyStack(stack_node *&dest, stack_node *src);
     void printStack(std::ostream& os, stack_node *node, int index) const;
-    int size;
 };
-
-
 
 #endif //STACK_H

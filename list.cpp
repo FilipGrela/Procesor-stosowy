@@ -24,7 +24,7 @@ char *list::getString() const {
     if (head == nullptr) {
         return nullptr;
     }
-    char *str = new char[size+2];
+    char *str = new char[size + 2];
     list_node *current = head;
     for (int i = 0; i < size; ++i) {
         str[i] = current->data;
@@ -46,7 +46,7 @@ list::~list() {
     deleteList(head);
 }
 
-void list::addOnBegining(const char value) {
+void list::addOnBeginning(const char value) {
     list_node *newNode = new list_node;
     newNode->data = value;
     newNode->next = head;
@@ -55,11 +55,8 @@ void list::addOnBegining(const char value) {
 }
 
 void list::add(const char value, int index) {
-    if (index < 0 || index > size) {
-        // throw std::out_of_range("Index out of range add");
-    }
     if (index == 0) {
-        addOnBegining(value);
+        addOnBeginning(value);
     } else {
         list_node *newNode = new list_node{value, nullptr};
         list_node *current = head;
@@ -86,6 +83,16 @@ void list::removeNode(list_node *&node, int index) {
     }
 }
 
+/**
+ * @brief Merges another list into this list.
+ *
+ * This function merges the nodes of another list into this list.
+ * If the other list is empty or null, the function does nothing.
+ * If this list is empty, it simply takes the head of the other list.
+ * Otherwise, it recursively merges the nodes of the other list into this list.
+ *
+ * @param otherList Pointer to the list to be merged.
+ */
 void list::mergeLists(list *otherList) {
     if (otherList == nullptr || otherList->head == nullptr) {
         return;
@@ -107,11 +114,7 @@ void list::mergeListsRecursive(list_node *current, list_node *otherHead) {
     }
 }
 
-
 void list::remove(const int index) {
-    if (index < 0 || index >= size) {
-        // throw std::out_of_range("Index out of range remove");
-    }
     removeNode(head, index);
 }
 
@@ -120,9 +123,6 @@ int list::getSize() const {
 }
 
 char list::getElementRecursive(list_node *node, int index) const {
-    if (node == nullptr) {
-        // throw std::out_of_range("Index out of range getElementRecursive");
-    }
     if (index == 0) {
         return node->data;
     }
@@ -132,9 +132,6 @@ char list::getElementRecursive(list_node *node, int index) const {
 char list::getListElement(int index) {
     if (head == nullptr) {
         return '\0';
-    }
-    if (index < 0 || index >= size) {
-        // throw std::out_of_range("Index out of range getListElement");
     }
     return getElementRecursive(head, index);
 }
@@ -150,7 +147,6 @@ void list::printList(std::ostream &os, list_node *node) const {
 bool list::empty() const {
     return getSize() == 0;
 }
-
 
 char list::popListElement() {
     if (head == nullptr) {

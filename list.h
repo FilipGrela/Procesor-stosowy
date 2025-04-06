@@ -26,13 +26,9 @@ public:
     char getListElement(int index);
     char popListElement();
     char *getString() const;
-
-    /***
-     * Adds the elements of the other list to the end of this list.
-     */
     void mergeLists(list *otherList);
 private:
-    void addOnBegining(char value);
+    void addOnBeginning(char value);
     void copyList(list_node *&thisNode, list_node *otherNode);
     void removeNode(list_node *&node, int index);
     char getElementRecursive(list_node *node, int index) const;
