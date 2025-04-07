@@ -3,9 +3,6 @@
 /// The program memory stores the program. The program is a sequence of instructions, and each instruction is a single character.
 char program[20000];
 
-/// The data memory stores the input data. The input data is a sequence of characters, and each character is one byte.
-char inputData[20000];
-
 /// The instruction pointer stores the number of the instruction that will be executed next and increments by one after its execution (for most instructions).
 int current_step_pointer;
 
@@ -27,8 +24,8 @@ void getProgram() {
 /**
  * Reads the input data from the user.
  */
-void getInputData() {
-    std::cin >> inputData;
+char getInputData() {
+    return std::cin.get();
 }
 
 /// Print a character to the console.
@@ -545,12 +542,8 @@ void handleMinusSymbol() {
 * @param isInputDataRead if set to false program will load data from std in.
 * @param inputDataIndex pointer to current char in inputData tabele.
 */
-void handleDotSymbol(bool &isInputDataRead, int &inputDataIndex) {
-    if (!isInputDataRead) {
-        getInputData();
-        isInputDataRead = true;
-    }
-    processorStack->getListByPosition()->add(inputData[inputDataIndex]);
+void handleDotSymbol(int &inputDataIndex) {
+    processorStack->getListByPosition()->add(getInputData());
     inputDataIndex++;
 }
 
@@ -744,12 +737,12 @@ void init() {
     current_step_pointer = 0;
     processorStack = new stack();
     getProgram();
+    std::cin.ignore();
 }
 
 int main() {
     init();
 
-    bool isInputDataRead = false;
     int inputDataIndex = 0;
     char str = '\0';
 
@@ -781,7 +774,7 @@ int main() {
                 handlePlusSymbol();
                 break;
             case '.':
-                handleDotSymbol(isInputDataRead, inputDataIndex);
+                handleDotSymbol(inputDataIndex);
                 break;
             case '^':
                 handleCaretSymbol();
