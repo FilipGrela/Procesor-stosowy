@@ -20,18 +20,18 @@ void list::copyList(list_node *&thisNode, list_node *otherNode) {
     }
 }
 
-char *list::getString() const {
-    if (head == nullptr) {
-        return nullptr;
+void list::reverse() {
+    reverseRecursive(nullptr, head);
+}
+
+void list::reverseRecursive(list_node *prev, list_node *current) {
+    if (current == nullptr) {
+        head = prev;
+        return;
     }
-    char *str = new char[size + 2];
-    list_node *current = head;
-    for (int i = 0; i < size; ++i) {
-        str[i] = current->data;
-        current = current->next;
-    }
-    str[size] = '\0';
-    return str;
+    list_node *next = current->next;
+    current->next = prev;
+    reverseRecursive(current, next);
 }
 
 void list::deleteList(list_node *node) {
@@ -58,14 +58,17 @@ void list::add(const char value, int index) {
     if (index == 0) {
         addOnBeginning(value);
     } else {
-        list_node *newNode = new list_node{value, nullptr};
-        list_node *current = head;
-        for (int i = 1; i < index; ++i) {
-            current = current->next;
-        }
-        newNode->next = current->next;
-        current->next = newNode;
+        addRecursive(head, value, index);
+    }
+}
+
+void list::addRecursive(list_node *&node, const char value, int index) {
+    if (index == 1) {
+        list_node *newNode = new list_node{value, node->next};
+        node->next = newNode;
         ++size;
+    } else {
+        addRecursive(node->next, value, index - 1);
     }
 }
 

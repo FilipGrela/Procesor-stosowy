@@ -25,9 +25,11 @@ public:
     int getSize() const;
     char getListElement(int index);
     char popListElement();
-    char *getString() const;
+    void reverse();
     void mergeLists(list *otherList);
 private:
+    void addRecursive(list_node *&node, const char value, int index);
+    void reverseRecursive(list_node *prev, list_node *current);
     void addOnBeginning(char value);
     void copyList(list_node *&thisNode, list_node *otherNode);
     void removeNode(list_node *&node, int index);
